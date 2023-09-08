@@ -1,8 +1,10 @@
 import React, {useState, useContext} from "react";
-import { View, Text, StyleSheet,Image, TextInput,TouchableOpacity,ImageBackground } from "react-native";
+import { View, Text, StyleSheet,Image, TextInput,TouchableOpacity,ImageBackground, Alert } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
-
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useNavigation } from "@react-navigation/native";
 import { AuthContext } from "../../contexts/AuthContext";
+import { StackPramsList } from '../../routes/auth.routes';
 
 export default function SignIn(){
 
@@ -10,13 +12,25 @@ export default function SignIn(){
 
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
+    const navigation = useNavigation<NativeStackNavigationProp<StackPramsList>>();
 
     async function handleLogin(){
         if(username === '' || password === ''){
+            Alert.alert('Login','Preencha todos os campos para prosseguir.')
             return;
         }
 
-        await signIn({username, password})
+        await signIn({username, password}).then((res:any) => {
+            console.log('res..::'+res)
+            if(res === false){
+                Alert.alert('Login','Erro ao tentar entrar, por favor, insira email e senha corretos.')
+            }
+        })
+        
+    }
+
+    function handleTelaCadastro(){
+        navigation.navigate("SignUp")
     }
 
     return(
@@ -37,7 +51,7 @@ export default function SignIn(){
                         <Text style={styles.buttonText}>Entrar</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.button}>
+                    <TouchableOpacity style={styles.button} onPress={handleTelaCadastro}>
                         <Text style={styles.buttonText}>Cadastrar</Text>
                     </TouchableOpacity>
                 </View>

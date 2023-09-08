@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "545094377699",
+    "project_id": "cursoapp-b11dd",
+    "storage_bucket": "cursoapp-b11dd.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:545094377699:android:9ffa56842f4f3254e6e5d6",
+        "android_client_info": {
+          "package_name": "com.erickscolar.tamarcado"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "545094377699-ns1t1g6uri3cgtues86q1fuv0bv9o4qf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzB9yjk5kmWNu9L2q7pgivQyiVWus_ibY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "545094377699-ns1t1g6uri3cgtues86q1fuv0bv9o4qf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

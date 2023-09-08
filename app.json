@@ -5,6 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
+    "backgroundColor": "#ffffff",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
@@ -15,16 +16,33 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.erickscolar.tamarcado"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+        "backgroundColor": "#ffffff",
+        "googleServicesFile": "./google-services.json"
+      },
+      "package": "com.erickscolar.tamarcado"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
-    }
+      "favicon": "./assets/favicon.png",
+      "backgroundColor":"#ffffff"
+    },
+    "plugins": [
+      "@notifee/react-native",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 33,
+            "targetSdkVersion": 33,
+            "buildToolsVersion": "33.0.0"
+          }
+        }
+      ]
+    ]
   }
 }

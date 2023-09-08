@@ -1,11 +1,16 @@
-import React, {useState, createContext, ReactNode} from "react";
+import React, {useState, createContext, ReactNode, useEffect} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { api } from "../services/api";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { StackPramsList } from "../routes/auth.routes";   
+import { TypeEnderecoCliente } from "../pages/SignUp/CadastroCliente/EnderecoCliente";
 
 type AuthContextData = {
     user: UserProps;
     isAuthenticated: boolean;
     signIn: (credentials: SignInProps) => Promise<void>;
+    signUp: (credentials: SignUpProps) => Promise<any>;
 }
 
 type UserProps = {
@@ -13,6 +18,17 @@ type UserProps = {
     cpfOrCnpj: string;
     token: string;
     empresa?: EmpresaProps[]
+}
+
+type SignUpProps = {
+    nome: string,
+    sobrenome: string,
+    cpfOrCnpj: string,
+    email: string,
+    telefone: string,
+    endereco: TypeEnderecoCliente,
+    senha: string,
+    nivel_id: number
 }
 
 
@@ -41,6 +57,8 @@ type SignInProps = {
 export const AuthContext = createContext({} as AuthContextData)
 
 export function AuthProvider({children}:AuthProviderProps){
+
+
     
     const [user, setUser] = useState<UserProps>({
         email: '',
@@ -48,6 +66,7 @@ export function AuthProvider({children}:AuthProviderProps){
         token: '',
         empresa: []
     })
+    const navigation = useNavigation<NativeStackNavigationProp<StackPramsList>>();
 
     const [loadingAuth, setLoadingAuth]= useState(false)
 
@@ -82,15 +101,42 @@ export function AuthProvider({children}:AuthProviderProps){
             })
 
             setLoadingAuth(false)
-
+            return data;
         }catch(err){
             console.log('erro ao acessar..::',err);
             setLoadingAuth(false)
+            return false;
         }
     }
 
+    async function signUp({ nome, sobrenome, cpfOrCnpj, email, endereco, telefone, senha, nivel_id  }:SignUpProps) {
+        setLoadingAuth(true);
+        
+        try{
+            const response = await api.post('/users',{
+                nome,
+                sobrenome,
+                cpfOrCnpj,
+                email,
+                telefone,
+                endereco,
+                senha,
+                nivel_id
+            })
+            console.log('retorno api..::'+response)
+            //navigation.navigate("SignIn")
+            setLoadingAuth(false)
+            return JSON.stringify(response.data.status);
+        }catch(err){
+            console.log('error..::'+err)
+            setLoadingAuth(false)
+            return false;
+        }
+
+    }
+
     return(
-        <AuthContext.Provider value={{ user, isAuthenticated, signIn }}>
+        <AuthContext.Provider value={{ user, isAuthenticated, signIn, signUp }}>
             {children}
         </AuthContext.Provider>
     )
