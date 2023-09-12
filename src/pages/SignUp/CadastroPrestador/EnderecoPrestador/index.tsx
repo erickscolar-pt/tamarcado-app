@@ -5,11 +5,11 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { StackPramsList } from "../../../../routes/auth.routes"; 
 import { useNavigation } from "@react-navigation/native";
 import { TextInputMask } from 'react-native-masked-text';
-import SenhaCliente from "../SenhaCliente";
+import SenhaPrestador from "../SenhaPrestador";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AuthContext } from "../../../../contexts/AuthContext";
 
-export type TypeEnderecoCliente = {
+export type TypeEnderecoPrestador = {
     nomeRua:string
     numeroResidencia:string
     complemento?:string
@@ -21,6 +21,7 @@ export type TypeEnderecoCliente = {
     numeroTelefone?:string
     email?: string
 }
+
 interface Endereco {
     cep: string;
     logradouro: string;
@@ -33,9 +34,10 @@ interface Endereco {
     ddd: string;
     siafi: string;
   }
-export default function EnderecoCliente(){
-    const { consultaCep } = useContext(AuthContext);
 
+export default function EnderecoPrestador(){
+
+    const { consultaCep } = useContext(AuthContext);
     const navigation = useNavigation<NativeStackNavigationProp<StackPramsList>>();
 
     
@@ -57,7 +59,7 @@ export default function EnderecoCliente(){
         setTelefone(objRec.telefone)
     })
 
-    const obj: TypeEnderecoCliente = {
+    const obj: TypeEnderecoPrestador = {
         nomeRua: rua, 
         numeroResidencia: numeroResidencial, 
         complemento: complemento, 
@@ -111,13 +113,13 @@ export default function EnderecoCliente(){
             Alert.alert('Endereço', 'Preencha os campos obrigatorios de endereço')
             return;
         }
-        AsyncStorage.setItem('ObjEnderecoCliente',JSON.stringify(obj))
-        navigation.navigate('SenhaCliente')
+        AsyncStorage.setItem('ObjEnderecoPrestador',JSON.stringify(obj))
+        navigation.navigate('SenhaPrestador')
     }
 
     function handleBack(){
-        AsyncStorage.setItem('ObjEnderecoCliente',JSON.stringify(obj))
-        navigation.navigate('DadosPessoaisCliente')
+        AsyncStorage.setItem('ObjEnderecoPrestador',JSON.stringify(obj))
+        navigation.navigate('DadosPessoaisPrestador')
     }
     
 

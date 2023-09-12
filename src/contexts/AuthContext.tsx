@@ -1,6 +1,6 @@
 import React, {useState, createContext, ReactNode, useEffect} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { api } from "../services/api";
+import { api, consultarCep, consultarCnpj } from "../services/api";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { StackPramsList } from "../routes/auth.routes";   
@@ -11,6 +11,9 @@ type AuthContextData = {
     isAuthenticated: boolean;
     signIn: (credentials: SignInProps) => Promise<void>;
     signUp: (credentials: SignUpProps) => Promise<any>;
+    signOut: () => Promise<void>;
+    consultaCnpj: (credentials: any) => Promise<any>
+    consultaCep: (credentials: any) => Promise<any>
 }
 
 type UserProps = {
@@ -135,8 +138,42 @@ export function AuthProvider({children}:AuthProviderProps){
 
     }
 
+    async function consultaCnpj(cnpj:any) {
+        try{
+            const response = await consultarCnpj(cnpj)
+            return JSON.stringify(response);
+        }catch(err){
+            console.log('error..::'+err)
+            return false;
+        }
+    }
+
+    async function consultaCep(cep:any) {
+        try{
+            const response = await consultarCep(cep)
+            return JSON.stringify(response);
+        }catch(err){
+            console.log('error..::'+err)
+            return false;
+        }
+    }
+
+
+
+    async function signOut(){
+        await AsyncStorage.clear()
+        .then( () => {
+          setUser({
+            email: '',
+            cpfOrCnpj: '',
+            token: '',
+            empresa: []
+          })
+        })
+      }
+
     return(
-        <AuthContext.Provider value={{ user, isAuthenticated, signIn, signUp }}>
+        <AuthContext.Provider value={{ user, isAuthenticated, signIn, signUp,signOut,consultaCnpj,consultaCep }}>
             {children}
         </AuthContext.Provider>
     )

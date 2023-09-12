@@ -27,6 +27,11 @@ export default function SignUp(){
         navigation.navigate("DadosPessoaisCliente");
     }
 
+    function handleStartCadastroPrestador(){
+        sendImmediateNotification()
+        navigation.navigate("DadosPessoaisPrestador");
+    }
+
     return(
         <ImageBackground 
         source={require('../../assets/imgfundo2.png')}
@@ -37,7 +42,7 @@ export default function SignUp(){
                     <TouchableOpacity onPress={handleStartCadastroCliente} style={styles.button}>
                         <Text style={styles.buttonText}>Cliente</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.button}>
+                    <TouchableOpacity style={styles.button} onPress={handleStartCadastroPrestador}>
                         <Text style={styles.buttonText}>Prestador</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.buttonBack} onPress={handleBackLogin}>
