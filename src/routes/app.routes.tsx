@@ -7,8 +7,44 @@ import Home from "../pages/Home";
 import Perfil from "../pages/Perfil";
 import Search from "../pages/Search";
 import Agendamentos from "../pages/Agendamentos";
+import DadosEmpresaAgendamento from "../pages/DadosEmpresaAgendamento";
+import { TypeEnderecoCliente } from "../pages/SignUp/CadastroCliente/EnderecoCliente";
+import AgendamentoData from "../pages/AgendamentoData";
 
-const Tab = createBottomTabNavigator();
+
+export type StackPramsList = {
+    DadosEmpresaAgendamento: {
+        nomeempresa: string;
+        cnpj: string;
+        telefone: string;
+        social_instagram: string;
+        social_facebook: string;
+        descricao: string;
+        endereco: TypeEnderecoCliente;
+        idUsuario:string;
+        usuario: {
+            nome: string;
+            sobrenome: string;
+            cpfOrCnpj: string;
+            email: string
+            telefone: string;
+            endereco?: TypeEnderecoCliente;
+            senha: string;
+            nivel_id: number;
+        }
+    };
+    Home: undefined;
+    Search: undefined;
+    Agendamentos: undefined;
+    Perfil: undefined;
+    AgendamentoData: {
+        idUsuario:string;
+        cnpj:string;
+    };
+};
+
+const Tab = createBottomTabNavigator<StackPramsList>();
+
 
 function AppRoutes() {
     return (
@@ -20,7 +56,7 @@ function AppRoutes() {
                     backgroundColor: '#9F744C',
                     height: 60,
                     borderTopWidth: 0,
-                    borderBottomWidth:0,
+                    borderBottomWidth: 0,
                 },
             }}
 
@@ -83,6 +119,22 @@ function AppRoutes() {
                 }}
                 name="Perfil"
                 component={Perfil}
+            />
+            <Tab.Screen
+                options={{
+                    headerShown: false,
+                    tabBarButton: () => null
+                }}
+                name="DadosEmpresaAgendamento"
+                component={DadosEmpresaAgendamento}
+            />
+            <Tab.Screen
+                options={{
+                    headerShown: false,
+                    tabBarButton: () => null
+                }}
+                name="AgendamentoData"
+                component={AgendamentoData}
             />
         </Tab.Navigator>
     )

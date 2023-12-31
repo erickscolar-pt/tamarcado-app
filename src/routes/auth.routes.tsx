@@ -27,17 +27,18 @@ const Stack = createNativeStackNavigator<StackPramsList>();
 function AuthRoutes() {
     return (
         <Stack.Navigator>
-            <Stack.Screen options={{ headerShown: false }} name="SignIn" component={SignIn} />
-            <Stack.Screen options={{ headerShown: false }} name="SignUp" component={SignUp} />
-            {/* Tela de Cadastro de Cliente */}
-            <Stack.Screen options={{ headerShown: false }} name="DadosPessoaisCliente" component={DadosPessoaisCliente} />
-            <Stack.Screen options={{ headerShown: false }} name="EnderecoCliente" component={EnderecoCliente} />
-            <Stack.Screen options={{ headerShown: false }} name="SenhaCliente" component={SenhaCliente} />
-            {/* Tela de Cadastro de Prestador */}
-            <Stack.Screen options={{ headerShown: false }} name="DadosPessoaisPrestador" component={DadosPessoaisPrestador} />
-            <Stack.Screen options={{ headerShown: false }} name="EnderecoPrestador" component={EnderecoPrestador} />
-            <Stack.Screen options={{ headerShown: false }} name="SenhaPrestador" component={SenhaPrestador} />
+                <Stack.Screen options={{ headerShown: false }} name="SignIn" component={SignIn} />
+                <Stack.Screen options={{ headerShown: false }} name="SignUp" component={SignUp} />
+                {/* Tela de Cadastro de Cliente */}
+                <Stack.Screen options={{ headerShown: false }} name="DadosPessoaisCliente" component={DadosPessoaisCliente} />
+                <Stack.Screen options={{ headerShown: false }} name="EnderecoCliente" component={EnderecoCliente} />
+                <Stack.Screen options={{ headerShown: false }} name="SenhaCliente" component={SenhaCliente} />
+                {/* Tela de Cadastro de Prestador */}
+                <Stack.Screen options={{ headerShown: false }} name="DadosPessoaisPrestador" component={DadosPessoaisPrestador} />
+                <Stack.Screen options={{ headerShown: false }} name="EnderecoPrestador" component={EnderecoPrestador} />
+                <Stack.Screen options={{ headerShown: false }} name="SenhaPrestador" component={SenhaPrestador} />
         </Stack.Navigator>
+
     )
 }
 

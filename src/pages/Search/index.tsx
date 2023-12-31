@@ -1,5 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import {
   View,
@@ -12,10 +12,14 @@ import {
   TextInput
 } from 'react-native'
 import { api } from '../../services/api'
-import { useEffect, useState } from 'react';
 import { TypeEnderecoCliente } from '../SignUp/CadastroCliente/EnderecoCliente';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { StackPramsList } from '../../routes/app.routes';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 export type UnidadesProps = {
   nomeempresa: string;
@@ -25,6 +29,7 @@ export type UnidadesProps = {
   social_facebook: string;
   descricao: string;
   endereco: TypeEnderecoCliente;
+  idUsuario:string;
   usuario: {
     nome: string;
     sobrenome: string;
@@ -36,22 +41,65 @@ export type UnidadesProps = {
     nivel_id: number;
   }
 }
+type UserProps = {
+  email: string;
+  cpfOrCnpj: string;
+  token: string;
+  empresa?: EmpresaProps[]
+}
+type EmpresaProps = {
+  id: number
+  nomeempresa: string;
+  telefone: string;
+  endereco: string;
+  cnpj: string;
+  social_instagram: string;
+  social_facebook: string;
+  descricao: string;
+  created_at: string;
+  updated_at: string;
+}
 const { width: WIDTH, height: HEIGHT } = Dimensions.get('window')
 
 export default function Search() {
+  const navigation = useNavigation<NativeStackNavigationProp<StackPramsList>>();
+
   const [empresas, setEmpresas] = useState<UnidadesProps[] | []>([]);
   const [search, setSearch] = useState('')
+  const [user, setUser] = useState<UserProps>({
+    email: '',
+    cpfOrCnpj: '',
+    token: '',
+    empresa: [],
+  })
 
-  async function handleLogin(id: string) {
-    console.log('Empresa..::' + id)
-
+  async function handleDadosEmpresa(emp: UnidadesProps) {
+    navigation.navigate('DadosEmpresaAgendamento', emp); // Use o nome da rota da nova tela aqui
   }
-
 
   useEffect(() => {
     async function loadUnidades() {
+      //Pegar os dados salvos do user
+      const userInfo = await AsyncStorage.getItem('@tamarcado');
+      let hasUser: [UserProps] = JSON.parse(userInfo || '{}')
+      // Verificar se recebemos as informaçoes dele.
+      if (Object.keys(hasUser).length > 0) {
+        api.defaults.headers.common['Authorization'] = `Bearer ${hasUser[0].token}`
+
+        setUser({
+          cpfOrCnpj: hasUser[0].cpfOrCnpj,
+          email: hasUser[0].email,
+          empresa: hasUser[0].empresa,
+          token: hasUser[0].token
+        })
+      }
       const response = await api.get('/unidades')
-      setEmpresas(response.data)
+      const unidadesComIdUsuarioEspecifico = response.data.map((unidade:UnidadesProps) => ({
+        ...unidade,        
+        idUsuario: hasUser[0].cpfOrCnpj, // Substitua pelo valor desejado
+      }));
+      console.log('cpf'+user.cpfOrCnpj)
+      setEmpresas(unidadesComIdUsuarioEspecifico)
 
     }
     loadUnidades()
@@ -95,16 +143,17 @@ export default function Search() {
 
                     <Text style={styles.nomeEmpresa}>{
                       item?.endereco === null || item?.endereco === undefined ?
-                      'Sem endereço' :
-                      item?.endereco.nomeRua
+                        'Sem endereço' :
+                        item?.endereco.nomeRua
                     }</Text>
 
                     <View style={styles.boxAgendarAvaliable}>
                       <Image
                         source={require('../../assets/avaliable.png')}
-                        style={styles.imagem}
+                        style={styles.imagemAvaliable}
                       />
-                      <TouchableOpacity style={styles.button} onPress={(() => { handleLogin(item?.cnpj) })}>
+                      <TouchableOpacity style={styles.button}
+                        onPress={(() => { handleDadosEmpresa(item) })}>
                         <Text style={styles.buttonText}>AGENDAR</Text>
                       </TouchableOpacity>
                     </View>
@@ -130,12 +179,12 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     alignItems: 'center',
   },
-  titlePage:{
-    justifyContent:'center',
-    textAlign:'center',
-    color:'#FFF',
-    fontSize:24,
-    marginTop:20
+  titlePage: {
+    justifyContent: 'center',
+    textAlign: 'center',
+    color: '#FFF',
+    fontSize: 24,
+    marginTop: 20
   },
   search: {
     width: '95%',
@@ -148,6 +197,7 @@ const styles = StyleSheet.create({
     color: '#000',
     textAlign: 'center',
     marginTop: 15,
+    marginBottom: 15,
     backgroundColor: 'rgba(255, 255, 255, 0.12)',
     flexDirection: 'row',
     alignContent: 'center',
@@ -172,10 +222,9 @@ const styles = StyleSheet.create({
   },
   card: {
     alignSelf: 'center',
-    flex: 1,
     width: '95%',
-    height: HEIGHT / 4.5,
-    marginTop: 10,
+    paddingTop: 6,
+    paddingBottom: 6,
     alignItems: 'center',
     marginBottom: 10,
     backgroundColor: 'rgba(155, 135, 27, 0.72)',
@@ -184,14 +233,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row'
   },
   imagem: {
-    marginLeft: 10,
-    width: WIDTH - 280,
+    width: WIDTH - 210,
     resizeMode: 'contain', // Como a imagem se ajustará ao espaço disponível (pode ser 'cover', 'contain', etc.)
   },
   info: {
     margin: 10,
     width: '80%',
-    height: HEIGHT / 6
   },
   title: {
     color: '#FFF',
@@ -211,7 +258,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-start',
     alignContent: 'center',
-    alignItems: 'baseline'
+    alignItems: 'baseline',
+    maxWidth: WIDTH - 200
   },
   button: {
     width: '40%',
@@ -227,5 +275,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#fff',
     fontWeight: 'bold'
+  },
+  imagemAvaliable: {
+    marginRight: 15,
+    resizeMode: 'contain'
   }
 });

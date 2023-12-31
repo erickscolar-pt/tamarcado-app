@@ -5,6 +5,7 @@ import Routes from './src/routes';
 import * as Notifications from 'expo-notifications';
 import { useEffect, useRef, useState } from 'react';
 import * as Device from 'expo-device';
+import { NativeBaseProvider } from "native-base";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -15,7 +16,7 @@ Notifications.setNotificationHandler({
 });
 
 // Can use this function below OR use Expo's Push Notification Tool from: https://expo.dev/notifications
-async function sendPushNotification(expoPushToken:any) {
+async function sendPushNotification(expoPushToken: any) {
   const message = {
     to: expoPushToken,
     sound: 'default',
@@ -75,17 +76,17 @@ export default function App() {
   const notificationListener = useRef();
   const responseListener = useRef();
 
-
-
   return (
-        <NavigationContainer>
-          <AuthProvider>
-              <StatusBar backgroundColor='#D6AE20' barStyle="light-content" translucent={false}/>
-              <Routes/>
-          </AuthProvider>
-        </NavigationContainer>
+    <NativeBaseProvider>
+      <NavigationContainer>
+        <AuthProvider>
+          <StatusBar backgroundColor='#D6AE20' barStyle="light-content" translucent={false} />
+          <Routes />
+        </AuthProvider>
+      </NavigationContainer>
+    </NativeBaseProvider>
 
-    
+
   );
 }
 

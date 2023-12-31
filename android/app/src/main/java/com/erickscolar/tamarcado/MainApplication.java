@@ -12,6 +12,10 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactNativeHost;
 import com.facebook.soloader.SoLoader;
 
+import io.invertase.firebase.messaging.RNFirebaseMessagingPackage;
+import io.invertase.firebase.notifications.RNFirebaseNotificationsPackage;
+import io.invertase.firebase.app.ReactNativeFirebaseAppPackage;
+
 import expo.modules.ApplicationLifecycleDispatcher;
 import expo.modules.ReactNativeHostWrapper;
 
@@ -31,7 +35,11 @@ public class MainApplication extends Application implements ReactApplication {
         @SuppressWarnings("UnnecessaryLocalVariable")
         List<ReactPackage> packages = new PackageList(this).getPackages();
         // Packages that cannot be autolinked yet can be added manually here, for example:
-        // packages.add(new MyReactNativePackage());
+        //packages.add(new MyReactNativePackage());
+        //packages.add(new RNFirebaseMessagingPackage());
+        //packages.add(new RNFirebaseNotificationsPackage());
+        packages.add(new ReactNativeFirebaseAppPackage());
+        
         return packages;
       }
 
