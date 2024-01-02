@@ -8,11 +8,10 @@ import * as ImagePicker from 'expo-image-picker';
 import { Camera } from 'expo-camera';
 
 export default function Perfil() {
-  const { signOut } = useContext(AuthContext);
+  const { signOut, user } = useContext(AuthContext);
   const [imageURL, setImageURL] = useState<string | null>(null);
   const [permission, requestPermission] = Camera.useCameraPermissions();
   const regex = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~\s]/g;
-  const { user } = useContext(AuthContext);
   const storage = getStorage(fb);
   const metadata = {
     contentType: 'image/jpeg'
@@ -20,15 +19,44 @@ export default function Perfil() {
 
   console.log(user.endereco)
 
-  useEffect(()=>{
+  useEffect(() => {
     const storageRef = ref(storage, 'imagens/' + user.cpfOrCnpj.replace(regex, ''));
     getDownloadURL(storageRef)
-    .then((metadata) => {
-      setImageURL(metadata)
-    })
-    .catch((error) => {
-    });
-  },[])
+      .then((metadata) => {
+        setImageURL(metadata)
+      })
+      .catch((error) => {
+      });
+  }, [])
+
+  const fetchImage = async () => {
+    try{
+      const storageRef = ref(storage, 'imagens/' + user.cpfOrCnpj.replace(regex, ''));
+      getDownloadURL(storageRef)
+        .then((metadata) => {
+          setImageURL(metadata)
+        })
+        .catch((error) => {
+        });
+    }catch(err){
+      console.log(err)
+    }
+  }
+
+  useEffect(() => {
+    // Carregar a imagem inicialmente
+    fetchImage();
+
+    // Configurar um intervalo para recarregar a imagem a cada 30 segundos
+    const intervalId = setInterval(() => {
+      fetchImage();
+    }, 30000);
+
+    // Limpar o intervalo quando o componente for desmontado
+    return () => clearInterval(intervalId);
+  }, []); // O segundo argumento vazio significa que este efeito só é executado uma vez
+
+
 
   async function handleUpload() {
 
@@ -51,6 +79,8 @@ export default function Perfil() {
         }).catch(err => {
           console.log(err)
         })
+
+      fetchImage();
       }
     } else {
       console.log('Permissão negada para acessar a galeria');
@@ -88,7 +118,7 @@ export default function Perfil() {
         <Text style={styles.infoPerfil}>{user.cpfOrCnpj}</Text>
         <Text style={styles.infoPerfil}>{user.email}</Text>
         <Text style={styles.infoPerfil}>{user.telefone}</Text>
-        <Text style={styles.infoPerfil}>{user.endereco?.nomeRua === 'undefined' ? "Sem endereço cadastrado": user.endereco?.nomeRua}</Text>
+        <Text style={styles.infoPerfil}>{user.endereco?.nomeRua === 'undefined' ? "Sem endereço cadastrado" : user.endereco?.nomeRua}</Text>
 
         <TouchableOpacity style={styles.button} onPress={(() => { handleSignOut() })}>
           <Text style={styles.buttonText}>Sair</Text>
@@ -109,27 +139,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: '100%'
   },
-  title:{
-    display:'flex',
-    flexDirection:'column',
-    justifyContent:'center',
-    color:'#FFF',
-    textAlign:'center',
-    fontSize:24,
-    fontStyle:'normal',
-    fontWeight:'400',
+  title: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    color: '#FFF',
+    textAlign: 'center',
+    fontSize: 24,
+    fontStyle: 'normal',
+    fontWeight: '400',
   },
-  infoPerfil:{
-    color:'#000',
-    fontSize:16,
-    textAlign:'left',
-    borderRadius:5,
-    borderWidth:1,
-    borderColor:'#000',
-    borderStyle:'solid',
-    width:'60%',
-    margin:5,
-    padding:15
+  infoPerfil: {
+    color: '#000',
+    fontSize: 16,
+    textAlign: 'left',
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: '#000',
+    borderStyle: 'solid',
+    width: '60%',
+    margin: 5,
+    padding: 15
   },
   button: {
     width: '40%',
@@ -149,7 +179,7 @@ const styles = StyleSheet.create({
   image: {
     width: 100,
     height: 100,
-    borderRadius:15,
+    borderRadius: 15,
     marginTop: 20,
   },
 });

@@ -1,5 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
 import {
   View,
@@ -19,6 +19,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StackPramsList } from '../../routes/app.routes';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AuthContext } from '../../contexts/AuthContext';
 
 
 export type UnidadesProps = {
@@ -29,7 +30,7 @@ export type UnidadesProps = {
   social_facebook: string;
   descricao: string;
   endereco: TypeEnderecoCliente;
-  idUsuario:string;
+  idUsuario: string;
   usuario: {
     nome: string;
     sobrenome: string;
@@ -63,15 +64,10 @@ const { width: WIDTH, height: HEIGHT } = Dimensions.get('window')
 
 export default function Search() {
   const navigation = useNavigation<NativeStackNavigationProp<StackPramsList>>();
-
+  const { user } = useContext(AuthContext);
   const [empresas, setEmpresas] = useState<UnidadesProps[] | []>([]);
   const [search, setSearch] = useState('')
-  const [user, setUser] = useState<UserProps>({
-    email: '',
-    cpfOrCnpj: '',
-    token: '',
-    empresa: [],
-  })
+
 
   async function handleDadosEmpresa(emp: UnidadesProps) {
     navigation.navigate('DadosEmpresaAgendamento', emp); // Use o nome da rota da nova tela aqui
@@ -79,26 +75,12 @@ export default function Search() {
 
   useEffect(() => {
     async function loadUnidades() {
-      //Pegar os dados salvos do user
-      const userInfo = await AsyncStorage.getItem('@tamarcado');
-      let hasUser: [UserProps] = JSON.parse(userInfo || '{}')
-      // Verificar se recebemos as informaçoes dele.
-      if (Object.keys(hasUser).length > 0) {
-        api.defaults.headers.common['Authorization'] = `Bearer ${hasUser[0].token}`
-
-        setUser({
-          cpfOrCnpj: hasUser[0].cpfOrCnpj,
-          email: hasUser[0].email,
-          empresa: hasUser[0].empresa,
-          token: hasUser[0].token
-        })
-      }
       const response = await api.get('/unidades')
-      const unidadesComIdUsuarioEspecifico = response.data.map((unidade:UnidadesProps) => ({
-        ...unidade,        
-        idUsuario: hasUser[0].cpfOrCnpj, // Substitua pelo valor desejado
+      const unidadesComIdUsuarioEspecifico = response.data.map((unidade: UnidadesProps) => ({
+        ...unidade,
+        idUsuario: user.cpfOrCnpj, // Substitua pelo valor desejado
       }));
-      console.log('cpf'+user.cpfOrCnpj)
+      console.log('cpf' + user.cpfOrCnpj)
       setEmpresas(unidadesComIdUsuarioEspecifico)
 
     }

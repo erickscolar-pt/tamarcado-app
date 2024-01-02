@@ -1,7 +1,65 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, Image, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { api } from '../../services/api'
+import { useContext, useEffect, useState } from 'react';
+import { AuthContext } from '../../contexts/AuthContext';
+import { TypeEnderecoCliente } from '../SignUp/CadastroCliente/EnderecoCliente';
+import { ScrollView } from 'native-base';
+
+export type UnidadesProps = {
+  nomeempresa: string;
+  telefone: string;
+  cnpj: string;
+  social_instagram: string;
+  social_facebook: string;
+  descricao: string;
+  endereco: TypeEnderecoCliente;
+  idUsuario: string;
+}
+type AgendamentoProps = {
+  id: number
+  data_hora: Date,
+  servico_id: number,
+  status_id: number,
+  unidade_id: number,
+  atendente_id: number,
+  usuario_id: number,
+  agendado?: boolean,
+  unidade?: UnidadesProps,
+  endereco?: TypeEnderecoCliente
+}
+
+const { width: WIDTH, height: HEIGHT } = Dimensions.get('window')
 
 export default function Agendamentos() {
+  const dataAtual = new Date();
+  const [dataAgendamento, setDataAgendamento] = useState(new Date());
+  const { user } = useContext(AuthContext);
+  const regex = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~\s]/g;
+  const [agendamento, setAgendamento] = useState<AgendamentoProps[] | []>([]);
+
+  useEffect(() => {
+    async function loadAgendamentos() {
+      const response: any = await api.get('/agendamentos/' + user.cpfOrCnpj.replace(regex, ''));
+      const agendamentosData = response.data[0]?.data?.map((agendamento: AgendamentoProps) => {
+        // Convertendo a string data_hora para um objeto Date
+        const dataHora = new Date(agendamento.data_hora);
+
+        return {
+          ...agendamento,
+          data_hora: dataHora, // Substituindo a string pela data convertida
+          agendado: dataHora >= dataAtual,
+        };
+      }) || [];
+
+      setAgendamento(agendamentosData);
+    }
+
+    loadAgendamentos();
+  }, [dataAtual, user.cpfOrCnpj]);
+
+
   return (
     <LinearGradient
       colors={['#E1ADAA', 'rgba(255, 255, 255, 0)']}
@@ -15,7 +73,63 @@ export default function Agendamentos() {
         end={{ x: 1, y: 1 }}
         style={styles.container}
       >
-        <Text>Pagina de agendamento</Text>
+        <Text style={styles.titlePage}>Agendamentos</Text>
+        <SafeAreaView style={styles.scroll}>
+          <ScrollView>
+            {
+              agendamento.map((item, index) => (
+                item.agendado === true ?
+                  <View style={styles.card} key={index}>
+                    <Image
+                      source={require('../../assets/imgOff.png')}
+                      style={styles.imagem}
+                    />
+                    <View style={styles.info}>
+                      <Text style={styles.title}>Estabelecimento</Text>
+                      <Text style={styles.infoAgendamento}>{item?.unidade?.nomeempresa}</Text>
+                      <Text style={styles.infoAgendamento}>
+                        {item?.data_hora === undefined ? 'Sem data agendada' :
+                          item?.data_hora.toLocaleDateString('pr-BR', {
+                            weekday: 'long',
+                            day: 'numeric',
+                            month: 'numeric',
+                            year: 'numeric'
+                          })
+                        }
+                      </Text>
+                      <Text style={styles.infoAgendamento}>
+                        {item?.data_hora === undefined ? 'Sem data agendada' :
+                          item?.data_hora.toLocaleTimeString('pr-BR', {
+                            hour: 'numeric',
+                            minute: 'numeric',
+                            hour12: true
+                          })
+                        }
+                      </Text>
+
+                      <Text style={styles.infoAgendamento}>{
+                        item?.endereco === null || item?.endereco === undefined ?
+                          'Sem endereço' :
+                          item?.endereco.nomeRua
+                      }</Text>
+
+                      <View style={styles.boxAgendarAvaliable}>
+
+                        <TouchableOpacity style={styles.button}
+                          onPress={(() => { })}>
+                          <Text style={styles.buttonText}>Cancelar</Text>
+                        </TouchableOpacity>
+                      </View>
+
+
+                    </View>
+                  </View>
+                  : ""
+
+              ))
+            }
+          </ScrollView>
+        </SafeAreaView>
 
       </LinearGradient>
     </LinearGradient>
@@ -28,5 +142,72 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%'
+  },
+  scroll: {
+    flex: 1,
+    marginBottom: 60,
+  },
+  titlePage: {
+    justifyContent: 'center',
+    textAlign: 'center',
+    color: '#FFF',
+    fontSize: 24,
+    marginTop: 20
+  },
+  card: {
+    alignSelf: 'center',
+    width: '95%',
+    paddingTop: 6,
+    paddingBottom: 6,
+    alignItems: 'center',
+    marginBottom: 10,
+    backgroundColor: 'rgba(155, 135, 27, 0.72)',
+    justifyContent: 'space-between',
+    borderRadius: 6,
+    flexDirection: 'row'
+  },
+  imagem: {
+    width: WIDTH - 210,
+    resizeMode: 'contain', // Como a imagem se ajustará ao espaço disponível (pode ser 'cover', 'contain', etc.)
+  },
+  info: {
+    margin: 10,
+    width: '80%',
+  },
+  title: {
+    color: '#FFF',
+    textAlign: 'left',
+    fontSize: 24,
+    fontStyle: 'normal',
+    fontWeight: '400'
+  },
+  infoAgendamento: {
+    color: '#FFF',
+    textAlign: 'left',
+    fontSize: 16,
+    fontStyle: 'normal',
+    fontWeight: '400'
+  },
+  boxAgendarAvaliable: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignContent: 'center',
+    alignItems: 'baseline',
+    maxWidth: WIDTH - 200
+  },
+  button: {
+    width: '40%',
+    height: 30,
+    backgroundColor: '#FF2E00',
+    borderRadius: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 6,
+    textAlign: 'center'
+  },
+  buttonText: {
+    fontSize: 12,
+    color: '#fff',
+    fontWeight: 'bold'
   },
 });

@@ -124,10 +124,13 @@ export default function AgendamentoData() {
             console.log("Erro..::" + err)
         })
 
-        setModalVisibleConfirmAgendamento(false)
 
     }
 
+    const handleOkAgendamento = () => {
+        setModalVisibleConfirmAgendamento(false)
+        navigation.navigate('Agendamentos')
+    }
 
 
     return (
@@ -254,7 +257,7 @@ export default function AgendamentoData() {
                                 animationType="fade"
                                 transparent={true}
                                 visible={modalVisibleConfirmAgendamento}
-                                
+
                                 onRequestClose={() => {
                                     Alert.alert('Modal has been closed.');
                                     setModalVisibleConfirmAgendamento(!modalVisibleConfirmAgendamento);
@@ -264,11 +267,11 @@ export default function AgendamentoData() {
                                         <Text style={styles.titleModal}>Agendamento Confirmado!</Text>
                                         <FontAwesome style={styles.icon} name="check-circle" size={60} color="#333" />
                                         <Pressable
-                                                style={[styles.button, styles.buttonClose]}
-                                                onPress={() => setModalVisibleConfirmAgendamento(!modalVisibleConfirmAgendamento)}>
+                                            style={[styles.button, styles.buttonClose]}
+                                            onPress={() => handleOkAgendamento()}>
 
-                                                <Text style={styles.textStyle}>Ok</Text>
-                                            </Pressable>
+                                            <Text style={styles.textStyle}>Ok</Text>
+                                        </Pressable>
                                     </View>
                                 </View>
                             </Modal>
@@ -405,8 +408,8 @@ const styles = StyleSheet.create({
     carouselContainer: {
         flexDirection: 'row',
     },
-    icon:{
-        marginTop:15,
-        color:'#148D00'
+    icon: {
+        marginTop: 15,
+        color: '#148D00'
     }
 });
