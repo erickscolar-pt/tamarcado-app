@@ -6,7 +6,6 @@ import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import SignUp from "../..";
 import { AuthContext } from "../../../../contexts/AuthContext";
-import notifee, {AndroidImportance} from '@notifee/react-native'
 import { TypeEnderecoPrestador } from "../EnderecoPrestador";
 
 

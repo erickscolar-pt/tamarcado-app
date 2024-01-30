@@ -88,17 +88,6 @@ export default function AgendamentoData() {
     };
 
     useEffect(() => {
-
-        async function getUser() {
-
-        }
-
-
-        getUser();
-
-    }, [])
-
-    useEffect(() => {
         async function loadUser() {
             const response: any = await api.get('/users/cpfOrCnpj/' + route?.params.idUsuario)
             setId(+response.data[0].data.id)
@@ -106,9 +95,10 @@ export default function AgendamentoData() {
         loadUser()
     }, [])
 
-
     const handleAgendar = async () => {
+        console.log(selectedDate + " " + selectedTime.toLocaleTimeString() + ".000")
         await api.post('/agendamentos', {
+            
             "data_hora": selectedDate + " " + selectedTime.toLocaleTimeString() + ".000",
             "servico_id": 1, // setar o tipo de serviço
             "status_id": 1, // setar o status do serviço

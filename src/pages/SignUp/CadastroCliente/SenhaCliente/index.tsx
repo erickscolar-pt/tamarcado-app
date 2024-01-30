@@ -6,12 +6,13 @@ import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import SignUp from "../..";
 import { AuthContext } from "../../../../contexts/AuthContext";
-import notifee, {AndroidImportance} from '@notifee/react-native'
 import { TypeEnderecoCliente } from "../EnderecoCliente";
-
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import fb from "../../../../contexts/FireBaseConfig";
 
 export default function SenhaCliente(){
     const navigation = useNavigation<NativeStackNavigationProp<StackPramsList>>();
+    const auth = getAuth(fb);
 
     const { signUp } = useContext(AuthContext);
 
@@ -39,27 +40,7 @@ export default function SenhaCliente(){
     const [confirmSenha, setConfirmSenha] = useState('')
     const nivel_id = 1;
     const regex = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~\s]/g;
-
-/*     async function displayNotification() {
-        await notifee.requestPermission();
-    
-        const channelId = await notifee.createChannel({
-          id: 'teste',
-          name: 'sales',
-          vibration: true,
-          importance: AndroidImportance.HIGH
-        });
-    
-        await notifee.displayNotification({
-          id: '7',
-          title: 'Bem vindo ao Tá Marcado',
-          body: 'Esse é um app especial para pessoas especiais!',
-          android: {
-            channelId
-          }
-        });
-      } */
-    
+        
       useEffect(() => {
         AsyncStorage.getItem('ObjEnderecoCliente')
           .then((obj: any) => {
@@ -104,6 +85,11 @@ export default function SenhaCliente(){
             }else{
                 navigation.navigate("SignIn")
             }
+        })
+        createUserWithEmailAndPassword(auth,email,senha).then((res)=>{
+            res.user
+        }).catch(res=>{
+            Alert.alert('Erro ao Cadastrar','Já existe cadastro em nosso sistema com essas informações! Por favor, tente cadastrar com um novo e-mail e documento diferente.')
         })
     }
     function handleBackEndereco(){

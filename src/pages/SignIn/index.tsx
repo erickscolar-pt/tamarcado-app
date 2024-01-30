@@ -34,14 +34,12 @@ export default function SignIn() {
             if (res === false) {
                 Alert.alert('Login', 'Erro ao tentar entrar, por favor, insira email e senha corretos.')
             }
-            setEmailfb("erick.scolar@outlook.com")
-            setPasswordfb("Neo@$.31082019")
+            setEmailfb(username)
+            setPasswordfb(password)
             signInWithEmailAndPassword(auth, emailfb, passwordfb)
                 .then((userCredential) => {
-                    // Signed in 
                     const user = userCredential.user;
                     console.log(user)
-                    // ...
                 })
                 .catch((error) => {
                     const errorCode = error.code;

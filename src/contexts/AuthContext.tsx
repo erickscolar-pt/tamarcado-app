@@ -1,4 +1,4 @@
-import React, { useState, createContext, ReactNode, useEffect } from "react";
+import React, { useState, createContext, ReactNode, useEffect, useContext } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { api, consultarCep, consultarCnpj } from "../services/api";
 import { useNavigation } from "@react-navigation/native";
@@ -17,7 +17,8 @@ type AuthContextData = {
     consultaCep: (credentials: any) => Promise<any>
 }
 
-type UserProps = {
+export type UserProps = {
+    id:number;
     email: string;
     nome: string;
     sobrenome: string;
@@ -77,11 +78,12 @@ type SignInProps = {
 
 export const AuthContext = createContext({} as AuthContextData)
 
-export function AuthProvider({ children }: AuthProviderProps) {
+function AuthProvider({ children }: AuthProviderProps) {
 
 
 
     const [user, setUser] = useState<UserProps>({
+        id:0,
         email: '',
         nome: '',
         sobrenome: '',
@@ -112,15 +114,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     useEffect(() => {
 
         async function getUser() {
-            //Pegar os dados salvos do user
             const userInfo = await AsyncStorage.getItem('@tamarcado');
             let hasUser: [UserProps] = JSON.parse(userInfo || '{}')
 
-            // Verificar se recebemos as informaçoes dele.
             if (Object.keys(hasUser).length > 0) {
                 api.defaults.headers.common['Authorization'] = `Bearer ${hasUser[0].token}`
-                console.log(hasUser)
                 setUser({
+                    id: hasUser[0].id,
                     nome: hasUser[0].nome,
                     sobrenome: hasUser[0].sobrenome,
                     telefone: hasUser[0].telefone,
@@ -151,7 +151,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             })
             console.log(response.data)
 
-            const { nome, sobrenome, telefone, endereco ,email, cpfOrCnpj, token, empresa } = response.data;
+            const { id, nome, sobrenome, telefone, endereco ,email, cpfOrCnpj, token, empresa } = response.data;
 
 
             const data = {
@@ -160,10 +160,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
             await AsyncStorage.setItem('@tamarcado', JSON.stringify(data))
 
-
             api.defaults.headers.common['Authorization'] = `Bearer ${token}`
 
             setUser({
+                id,
                 nome,
                 sobrenome,
                 telefone,
@@ -236,6 +236,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         await AsyncStorage.clear()
             .then(() => {
                 setUser({
+                    id:0,
                     email: '',
                     nome:'',
                     sobrenome:'',
@@ -265,3 +266,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
         </AuthContext.Provider>
     )
 }
+
+function useAuth() {
+    const context = useContext(AuthContext);
+  
+    if (!context) {
+      throw new Error('useAuth must be used within an AuthProvider.');
+    }
+  
+    return context;
+  }
+  
+  export {AuthProvider, useAuth};

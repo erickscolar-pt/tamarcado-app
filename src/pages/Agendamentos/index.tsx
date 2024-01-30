@@ -1,11 +1,13 @@
+import React from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
-import { StyleSheet, Text, View, Dimensions, Image, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '../../services/api'
 import { useContext, useEffect, useState } from 'react';
-import { AuthContext } from '../../contexts/AuthContext';
+import { AuthContext, UserProps } from '../../contexts/AuthContext';
 import { TypeEnderecoCliente } from '../SignUp/CadastroCliente/EnderecoCliente';
 import { ScrollView } from 'native-base';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type UnidadesProps = {
   nomeempresa: string;
@@ -34,31 +36,86 @@ const { width: WIDTH, height: HEIGHT } = Dimensions.get('window')
 
 export default function Agendamentos() {
   const dataAtual = new Date();
-  const [dataAgendamento, setDataAgendamento] = useState(new Date());
-  const { user } = useContext(AuthContext);
-  const regex = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~\s]/g;
   const [agendamento, setAgendamento] = useState<AgendamentoProps[] | []>([]);
+  const [isLoading, setIsLoading] = useState(true); // Adiciona um estado de carregamento
+  const [user, setUser] = useState<UserProps>()
 
   useEffect(() => {
-    async function loadAgendamentos() {
-      const response: any = await api.get('/agendamentos/' + user.cpfOrCnpj.replace(regex, ''));
-      const agendamentosData = response.data[0]?.data?.map((agendamento: AgendamentoProps) => {
-        // Convertendo a string data_hora para um objeto Date
-        const dataHora = new Date(agendamento.data_hora);
+    const loadAgendamentos = async () => {
+      try {
+        const userInfo = await AsyncStorage.getItem('@tamarcado');
+        let hasUser: [UserProps] = JSON.parse(userInfo || '{}')
+        
+        if (Object.keys(hasUser).length > 0) {
+          setUser({
+            id: hasUser[0].id,
+            nome: hasUser[0].nome,
+            sobrenome: hasUser[0].sobrenome,
+            telefone: hasUser[0].telefone,
+            endereco: hasUser[0].endereco,
+            cpfOrCnpj: hasUser[0].cpfOrCnpj,
+            email: hasUser[0].email,
+            empresa: hasUser[0].empresa,
+            token: hasUser[0].token
+          })
+        }
 
-        return {
-          ...agendamento,
-          data_hora: dataHora, // Substituindo a string pela data convertida
-          agendado: dataHora >= dataAtual,
-        };
-      }) || [];
+        const response: any = await api.get('/agendamentos/' + JSON.stringify(hasUser[0].id));
 
-      setAgendamento(agendamentosData);
+        const agendamentosData = response.data[0]?.data?.map((agendamento: AgendamentoProps) => {
+          const dataHora = new Date(agendamento.data_hora);
+
+          return {
+            ...agendamento,
+            data_hora: dataHora,
+            agendado: dataHora >= dataAtual,
+          };
+        }) || [];
+
+        setAgendamento(agendamentosData);
+      } catch (err) {
+
+      } finally {
+        setIsLoading(false);
+      }
     }
 
-    loadAgendamentos();
-  }, [dataAtual, user.cpfOrCnpj]);
+    
+    if (user && user?.cpfOrCnpj) {
+      loadAgendamentos();
+      setIsLoading(false);
+    }
+    
+    const intervalId = setInterval(() => {
+      loadAgendamentos();
+    }, 30000);
 
+    return () => clearInterval(intervalId);
+  }, []);
+
+
+  if (isLoading) {
+    return (
+      <LinearGradient
+        colors={['#E1ADAA', 'rgba(255, 255, 255, 0)']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.container}
+      >
+        <LinearGradient
+          colors={['rgba(255, 255, 255, 0)', '#D09234']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.container}
+        >
+          <View>
+            <ActivityIndicator size={60} color="#F5f7fb" />
+          </View>
+        </LinearGradient>
+      </LinearGradient>
+
+    );
+  }
 
   return (
     <LinearGradient

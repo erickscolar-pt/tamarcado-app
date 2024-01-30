@@ -9,7 +9,8 @@ import {
   Dimensions,
   ScrollView,
   Image,
-  TextInput
+  TextInput,
+  ActivityIndicator
 } from 'react-native'
 import { api } from '../../services/api'
 import { TypeEnderecoCliente } from '../SignUp/CadastroCliente/EnderecoCliente';
@@ -19,7 +20,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StackPramsList } from '../../routes/app.routes';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { AuthContext } from '../../contexts/AuthContext';
+import { AuthContext, UserProps } from '../../contexts/AuthContext';
 
 
 export type UnidadesProps = {
@@ -42,12 +43,7 @@ export type UnidadesProps = {
     nivel_id: number;
   }
 }
-type UserProps = {
-  email: string;
-  cpfOrCnpj: string;
-  token: string;
-  empresa?: EmpresaProps[]
-}
+
 type EmpresaProps = {
   id: number
   nomeempresa: string;
@@ -64,9 +60,10 @@ const { width: WIDTH, height: HEIGHT } = Dimensions.get('window')
 
 export default function Search() {
   const navigation = useNavigation<NativeStackNavigationProp<StackPramsList>>();
-  const { user } = useContext(AuthContext);
+  const [user, setUser] = useState<UserProps>()
   const [empresas, setEmpresas] = useState<UnidadesProps[] | []>([]);
   const [search, setSearch] = useState('')
+  const [isLoading, setIsLoading] = useState(true); // Adiciona um estado de carregamento
 
 
   async function handleDadosEmpresa(emp: UnidadesProps) {
@@ -74,18 +71,76 @@ export default function Search() {
   }
 
   useEffect(() => {
-    async function loadUnidades() {
-      const response = await api.get('/unidades')
-      const unidadesComIdUsuarioEspecifico = response.data.map((unidade: UnidadesProps) => ({
-        ...unidade,
-        idUsuario: user.cpfOrCnpj, // Substitua pelo valor desejado
-      }));
-      console.log('cpf' + user.cpfOrCnpj)
-      setEmpresas(unidadesComIdUsuarioEspecifico)
 
+    async function loadUnidades() {
+      try{
+        const userInfo = await AsyncStorage.getItem('@tamarcado');
+        let hasUser: [UserProps] = JSON.parse(userInfo || '{}')
+        
+        if (Object.keys(hasUser).length > 0) {
+          setUser({
+            id: hasUser[0].id,
+            nome: hasUser[0].nome,
+            sobrenome: hasUser[0].sobrenome,
+            telefone: hasUser[0].telefone,
+            endereco: hasUser[0].endereco,
+            cpfOrCnpj: hasUser[0].cpfOrCnpj,
+            email: hasUser[0].email,
+            empresa: hasUser[0].empresa,
+            token: hasUser[0].token
+          })
+        }
+
+        if (hasUser[0] && hasUser[0].cpfOrCnpj) {
+          const response = await api.get('/unidades')
+          const unidadesComIdUsuarioEspecifico = response.data.map((unidade: UnidadesProps) => ({
+            ...unidade,
+            idUsuario: hasUser[0].cpfOrCnpj, // Substitua pelo valor desejado
+          }));
+          setEmpresas(unidadesComIdUsuarioEspecifico)
+        }
+      }catch(err){
+  
+      }finally{
+        setIsLoading(false);
+      }
     }
-    loadUnidades()
+
+    if (user && user?.cpfOrCnpj) {
+      console.log('linha 110')
+      loadUnidades()
+      setIsLoading(false);
+    }
+    
+    const intervalId = setInterval(() => {
+      loadUnidades();
+    }, 30000);
+
+    return () => clearInterval(intervalId);
   }, [])
+
+  if (isLoading) {
+    return (
+      <LinearGradient
+        colors={['#E1ADAA', 'rgba(255, 255, 255, 0)']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.container}
+      >
+        <LinearGradient
+          colors={['rgba(255, 255, 255, 0)', '#D09234']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.container}
+        >
+          <View>
+            <ActivityIndicator size={60} color="#F5f7fb" />
+          </View>
+        </LinearGradient>
+      </LinearGradient>
+
+    );
+  }
 
   return (
     <LinearGradient
