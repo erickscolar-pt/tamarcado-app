@@ -3,8 +3,9 @@ import { NavigationContainer } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AuthProvider } from './src/contexts/AuthContext';
 
-
 import Routes from './src/routes';
+
+import "./global.css";
 
 export default function App() {
   return (
