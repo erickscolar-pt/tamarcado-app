@@ -3,7 +3,14 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "react": [ "./node_modules/@types/react" ]
+      "@/*": ["./*"]
     }
-  }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts",
+    "nativewind-env.d.ts"
+  ]
 }
